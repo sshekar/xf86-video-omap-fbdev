@@ -81,9 +81,9 @@ enum { FBDEV_ROTATE_NONE=0, FBDEV_ROTATE_CW=270, FBDEV_ROTATE_UD=180, FBDEV_ROTA
  */
 static int pix24bpp = 0;
 
-#define FBDEV_VERSION		4000
+#define FBDEV_VERSION		1000
 #define FBDEV_NAME		"FBDEV"
-#define FBDEV_DRIVER_NAME	"fbdev"
+#define FBDEV_DRIVER_NAME	"omapfbdev"
 
 _X_EXPORT DriverRec FBDEV = {
 	FBDEV_VERSION,
@@ -139,7 +139,7 @@ static XF86ModuleVersionInfo FBDevVersRec = {
 	{0,0,0,0}
 };
 
-_X_EXPORT XF86ModuleData fbdevModuleData = { &FBDevVersRec, FBDevSetup, NULL };
+_X_EXPORT XF86ModuleData omapfbdevModuleData = { &FBDevVersRec, FBDevSetup, NULL };
 
 pointer
 FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
@@ -241,13 +241,12 @@ FBDevProbe(DriverPtr drv, int flags)
 	for (i = 0; i < numDevSections; i++) {
 	    dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
 	    if (fbdevHWProbe(NULL,dev,NULL)) {
+            pScrn = NULL;
 		    entity = xf86ClaimFbSlot(drv, 0,
 					      devSections[i], TRUE);
 		    pScrn = xf86ConfigFbEntity(NULL,0,entity,
 					       NULL,NULL,NULL,NULL);
-		}
-		if (!pScrn) 
-            continue;
+		if (pScrn) { 
 
 		    foundScreen = TRUE;
 		    
@@ -265,7 +264,9 @@ FBDevProbe(DriverPtr drv, int flags)
 		    
 		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			       "using %s\n", dev ? dev : "default device");
+                }
 		}
+      }
 	xfree(devSections);
 	TRACE("probe done");
 	return foundScreen;
@@ -278,6 +279,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	int default_depth, fbbpp;
 	const char *s;
 	int type;
+        char *dev_node;
 
 	if (flags & PROBE_DETECT) return FALSE;
 
@@ -294,8 +296,13 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 
 	fPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 
+        /* We should get the device path from options */
+	dev_node = xf86FindOptionValue(fPtr->pEnt->device->options, "fbdev");
+	if (!dev_node)
+		dev_node = "/dev/fb0";
+
 	/* open device */
-	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(fPtr->pEnt->device->options,"fbdev")))
+	if (!fbdevHWInit(pScrn, NULL, path))
 		return FALSE;
 	default_depth = fbdevHWGetDepth(pScrn,&fbbpp);
 	if (!xf86SetDepthBpp(pScrn, default_depth, default_depth, fbbpp,

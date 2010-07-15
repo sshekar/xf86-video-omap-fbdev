@@ -24,9 +24,9 @@
 # _ladir passes a dummy rpath to libtool so the thing will actually link
 # TODO: -nostdlib/-Bstatic/-lgcc platform magic, not installing the .a, etc.
 AM_CFLAGS = @XORG_CFLAGS@
-omap_fbdev_drv_la_LTLIBRARIES = omap_fbdev_drv.la
-omap_fbdev_drv_la_LDFLAGS = -module -avoid-version
-omap_fbdev_drv_ladir = @moduledir@/drivers
+omapfbdev_drv_la_LTLIBRARIES = omapfbdev_drv.la
+omapfbdev_drv_la_LDFLAGS = -module -avoid-version
+omapfbdev_drv_ladir = @moduledir@/drivers
 
-omap_fbdev_drv_la_SOURCES = \
+omapfbdev_drv_la_SOURCES = \
          fbdev.c
