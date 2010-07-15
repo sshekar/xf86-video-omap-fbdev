@@ -1,0 +1,5 @@
+xf86-video-omap-fbdev - video driver for OMAP framebuffer device
+
+Developed by Shashi Shekar B.S. <shashi.shekar@ti.com> based on xf86-video-fbdev driver by
+             Alan Hourihane, <alanh@fairlite.demon.co.uk> and 
+             Michel DÃ¤nzer, <michel@tungstengraphics.com>
